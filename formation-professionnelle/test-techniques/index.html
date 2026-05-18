@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tests techniques - Parcours sombre</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0b1220;
+      color: #e5edf7;
+      line-height: 1.6;
+    }
+    .container { max-width: 980px; margin: 0 auto; padding: 26px 18px 48px; }
+    .header-bar {
+      background: #0ea5e9;
+      color: #08111f;
+      padding: 12px 18px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+    h1 { font-size: 1.7rem; margin: 0 0 8px 0; }
+    .subtitle { color: #9db0c8; margin-bottom: 18px; }
+    .panel {
+      background: #111a2b;
+      border: 1px solid #243247;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .card {
+      display: block;
+      text-decoration: none;
+      background: #0f1728;
+      border: 1px solid #25334a;
+      border-radius: 10px;
+      padding: 14px;
+      color: #e5edf7;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+    .card:hover { border-color: #38bdf8; transform: translateY(-1px); }
+    .badge {
+      display: inline-block;
+      background: #082235;
+      color: #7dd3fc;
+      border: 1px solid #14486b;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .meta { color: #9db0c8; font-size: .92rem; }
+    .result { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: #0d1728; border: 1px solid #1f2d45; }
+    .ok { color: #34d399; font-weight: 700; }
+    .ko { color: #f87171; font-weight: 700; }
+    .pending { color: #cbd5e1; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-bar">Test technique</div>
+    <h1>Parcours d'évaluation technique</h1>
+    <p class="subtitle">Thème sombre, charte cohérente, correction instantanée et décision d'orientation commune.</p>
+
+    <section class="panel">
+      <div class="grid">
+        <a class="card" href="test-docker.html">
+          <span class="badge">Test A</span>
+          <h2>Docker - Fondamentaux</h2>
+          <p class="meta">QCM basé sur le cours Introduction Docker : image, conteneur, build, réseau, volumes, healthcheck.</p>
+        </a>
+
+        <a class="card" href="test-conception.html">
+          <span class="badge">Test B</span>
+          <h2>Conception - Architecture logicielle</h2>
+          <p class="meta">QCM orienté conception : séparation des responsabilités, API, robustesse et maintenabilité.</p>
+        </a>
+
+        <a class="card" href="test-python-api-rest.html">
+          <span class="badge">Test C</span>
+          <h2>Python - API REST</h2>
+          <p class="meta">QCM + exercice de code Python/FastAPI pour vérifier la capacité à implémenter une API propre.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Décision d'orientation globale</h2>
+      <div id="decision" class="result" aria-live="polite">Décision en attente.</div>
+    </section>
+  </div>
+
+  <script>
+    const STORE_KEY = 'testTechScoresDarkV1';
+    const required = ['docker', 'conception', 'pythonApi'];
+    const thresholds = { docker: 60, conception: 60, pythonApi: 60 };
+
+    function loadStore() {
+      try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
+      catch (err) { return {}; }
+    }
+
+    function computeDecision(store) {
+      const missing = required.filter((k) => !store[k] || !store[k].completed);
+      if (missing.length) return { status: 'incomplete', missing };
+      const failed = required.filter((k) => (store[k].percent || 0) < thresholds[k]);
+      if (failed.length) return { status: 'no', failed };
+      return { status: 'yes' };
+    }
+
+    function globalScore(store) {
+      const score = required.reduce((acc, k) => acc + Number((store[k] && store[k].score) || 0), 0);
+      const max = required.reduce((acc, k) => acc + Number((store[k] && store[k].max) || 20), 0);
+      const percent = max ? (score / max) * 100 : 0;
+      return { score, max, percent };
+    }
+
+    function renderDecision() {
+      const store = loadStore();
+      const decision = computeDecision(store);
+      const total = globalScore(store);
+      const box = document.getElementById('decision');
+
+      if (decision.status === 'incomplete') {
+        box.innerHTML = `<span class="pending">Décision : en attente</span><br><small>Tests non terminés : ${decision.missing.join(', ')}. Score global actuel : ${total.score}/${total.max} (${total.percent.toFixed(1)}%).</small>`;
+        return;
+      }
+
+      if (decision.status === 'no') {
+        box.innerHTML = `<span class="ko">Décision : NON</span><br><small>Seuil non atteint sur : ${decision.failed.join(', ')}. Score global : ${total.score}/${total.max} (${total.percent.toFixed(1)}%).</small>`;
+        return;
+      }
+
+      box.innerHTML = `<span class="ok">Décision : OUI</span><br><small>Les trois tests dépassent le seuil. Score global : ${total.score}/${total.max} (${total.percent.toFixed(1)}%).</small>`;
+    }
+
+    renderDecision();
+  </script>
+</body>
+</html>

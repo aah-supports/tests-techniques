@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test C - Python API REST</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#0b1220;color:#e5edf7;line-height:1.6;margin:0}
+.container{max-width:980px;margin:0 auto;padding:26px 18px 48px}
+.header-bar{background:#0ea5e9;color:#08111f;padding:12px 18px;border-radius:10px;margin-bottom:18px;font-size:.9rem;font-weight:700}
+h1{font-size:1.7rem;margin:0 0 8px 0}
+.subtitle{color:#9db0c8;margin-bottom:18px}
+.panel{background:#111a2b;border:1px solid #243247;border-radius:12px;padding:18px;margin-bottom:16px}
+.q-item{padding:12px;border:1px solid #25334a;border-radius:10px;margin:10px 0;background:#0f1728}
+.q-item p{margin:0 0 8px 0;font-weight:600}
+.options label{display:block;margin:6px 0}
+button{border:none;border-radius:8px;padding:10px 14px;background:#0ea5e9;color:#08111f;font-weight:700;cursor:pointer}
+.result{margin-top:10px;padding:10px 12px;border-radius:8px;background:#0d1728;border:1px solid #1f2d45}
+.ok{color:#34d399;font-weight:700}
+.ko{color:#f87171;font-weight:700}
+.pending{color:#cbd5e1;font-weight:700}
+.back{margin-bottom:10px}
+.back a{text-decoration:none;color:#7dd3fc;font-weight:600}
+small,.note{color:#9db0c8}
+textarea{width:100%;min-height:220px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:.92rem;border:1px solid #324867;border-radius:10px;padding:12px;line-height:1.5;background:#0a1322;color:#d9e6f5}
+pre{background:#0a1322;color:#d9e6f5;padding:12px;border-radius:10px;overflow:auto;white-space:pre-wrap;border:1px solid #324867}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-bar"><strong>Test technique</strong></div>
+  <p class="back"><a href="index.html">← Retour aux tests</a></p>
+  <h1>Test C - Python API REST</h1>
+  <p class="subtitle">12 QCM + 1 exercice de code FastAPI (scoring automatique par critères).</p>
+
+  <section class="panel">
+    <h2>Partie 1 - QCM API REST</h2>
+    <form id="questions"></form>
+  </section>
+
+  <section class="panel">
+    <h2>Partie 2 - Proposition de code Python API REST</h2>
+    <p class="note">Objectif : proposer une route <code>POST /users</code> qui valide l'entrée, retourne <code>201</code> et expose un modèle de réponse.</p>
+
+<pre>from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, EmailStr
+
+app = FastAPI()
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    name: str
+
+fake_db = []
+
+# Écrire ici la route POST /users
+</pre>
+
+    <textarea id="python-code" spellcheck="false">@app.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def create_user(payload: UserCreate):
+    if any(u["email"] == payload.email for u in fake_db):
+        raise HTTPException(status_code=409, detail="Email déjà utilisé")
+
+    user = {
+        "id": len(fake_db) + 1,
+        "email": payload.email,
+        "name": payload.name
+    }
+    fake_db.append(user)
+    return user
+</textarea>
+
+    <div class="note">Conseil : conserve les éléments clés (route POST, modèle d'entrée/sortie, contrôle doublon, code HTTP 201, retour JSON).</div>
+  </section>
+
+  <section class="panel">
+    <button type="button" id="grade-btn">Corriger ce thème</button>
+    <div id="result" class="result" aria-live="polite">Aucune correction lancée.</div>
+    <div id="decision" class="result" aria-live="polite">Décision globale en attente.</div>
+  </section>
+</div>
+
+<script>
+const CONFIG = { themeKey: 'pythonApi' };
+const STORE_KEY = 'testTechScoresDarkV1';
+const requiredForRdv = ['docker', 'conception', 'pythonApi'];
+const thresholds = { docker: 60, conception: 60, pythonApi: 60 };
+const QCM_POINTS = 12;
+const CODE_POINTS = 8;
+
+const payload = {
+  title: 'Python API REST',
+  questions: [
+    { id: 1, q: 'Quel framework Python est explicitement orienté API modernes ?', options: ['Tkinter', 'FastAPI', 'NumPy', 'Scrapy'], answer: 1 },
+    { id: 2, q: 'Quel verbe HTTP utiliser pour créer une ressource ?', options: ['GET', 'DELETE', 'POST', 'OPTIONS'], answer: 2 },
+    { id: 3, q: 'Le code HTTP adapté à une création réussie est :', options: ['200', '201', '204', '302'], answer: 1 },
+    { id: 4, q: 'Le rôle de Pydantic dans FastAPI est :', options: ['compiler Python', 'valider et typer les données', 'gérer Docker', 'monitorer les logs'], answer: 1 },
+    { id: 5, q: 'Un endpoint REST doit idéalement être :', options: ['stateful par session serveur', 'prévisible et documenté', 'sans schéma de réponse', 'sans statut HTTP'], answer: 1 },
+    { id: 6, q: 'En cas de ressource absente, on renvoie généralement :', options: ['201', '404', '503', '301'], answer: 1 },
+    { id: 7, q: 'Que signifie JSON ?', options: ['Java Source Object Notation', 'JavaScript Object Notation', 'Joined Service Object Node', 'Aucune réponse'], answer: 1 },
+    { id: 8, q: 'Pourquoi utiliser `response_model` dans FastAPI ?', options: ['pour forcer du HTML', 'pour structurer la réponse et la documentation', 'pour ignorer le typage', 'pour accélérer Docker'], answer: 1 },
+    { id: 9, q: 'Un conflit de clé unique (email déjà présent) correspond souvent à :', options: ['400', '401', '409', '500'], answer: 2 },
+    { id: 10, q: 'Quel outil est couramment utilisé pour tester une API REST ?', options: ['Photoshop', 'Postman', 'Figma', 'PowerPoint'], answer: 1 },
+    { id: 11, q: 'Une route `GET /users` devrait retourner :', options: ['la suppression des users', 'la liste des users', 'la création d\'un user', 'un token JWT obligatoire'], answer: 1 },
+    { id: 12, q: 'Bonne pratique de conception API :', options: ['noms de routes cohérents et pluriels pour collections', 'mélanger noms FR/EN au hasard', 'retourner toujours du texte brut', 'éviter les codes HTTP'], answer: 0 }
+  ]
+};
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch (err) { return {}; }
+}
+function saveStore(store) { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+
+function globalScoreRdv(store) {
+  const score = requiredForRdv.reduce((acc, k) => acc + Number((store[k] && store[k].score) || 0), 0);
+  const maxTotal = requiredForRdv.reduce((acc, k) => {
+    const max = store[k] && typeof store[k].max === 'number' ? store[k].max : 20;
+    return acc + Number(max || 0);
+  }, 0);
+  const completedThemes = requiredForRdv.filter((k) => store[k] && store[k].completed).length;
+  const percent = maxTotal ? (score / maxTotal) * 100 : 0;
+  return { score, maxTotal, percent, completedThemes, totalThemes: requiredForRdv.length };
+}
+
+function computeDecision(store) {
+  const missing = requiredForRdv.filter((k) => !store[k] || !store[k].completed);
+  if (missing.length) return { status: 'incomplete', missing };
+  const failed = requiredForRdv.filter((k) => (store[k].percent || 0) < thresholds[k]);
+  if (failed.length) return { status: 'no', failed };
+  return { status: 'yes' };
+}
+
+function renderDecision() {
+  const store = loadStore();
+  const d = computeDecision(store);
+  const global = globalScoreRdv(store);
+  const box = document.getElementById('decision');
+
+  if (d.status === 'incomplete') {
+    box.innerHTML = `<span class="pending">Décision : en attente</span><br><small>Tests manquants/incomplets : ${d.missing.join(', ')}. Score global actuel : ${global.score}/${global.maxTotal} (${global.percent.toFixed(1)}%), tests terminés : ${global.completedThemes}/${global.totalThemes}.</small>`;
+    return;
+  }
+  if (d.status === 'no') {
+    box.innerHTML = `<span class="ko">Décision : NON</span><br><small>Thèmes sous le seuil : ${d.failed.join(', ')}. Score global : ${global.score}/${global.maxTotal} (${global.percent.toFixed(1)}%).</small>`;
+    return;
+  }
+  box.innerHTML = `<span class="ok">Décision : OUI</span><br><small>Profil cohérent pour un rendez-vous technique. Score global : ${global.score}/${global.maxTotal} (${global.percent.toFixed(1)}%).</small>`;
+}
+
+function getThemeData() {
+  const store = loadStore();
+  return store[CONFIG.themeKey] || { answers: {}, code: '', score: 0, max: 20, percent: 0, completed: false };
+}
+
+function renderQuestions() {
+  const form = document.getElementById('questions');
+  const saved = getThemeData().answers || {};
+  form.innerHTML = payload.questions.map((q, index) => {
+    const options = q.options.map((opt, i) => {
+      const checked = Number(saved[q.id]) === i ? 'checked' : '';
+      return `<label><input type="radio" name="q-${q.id}" value="${i}" ${checked}> ${opt}</label>`;
+    }).join('');
+
+    return `<div class="q-item"><p>${index + 1}. ${q.q}</p><div class="options">${options}</div></div>`;
+  }).join('');
+
+  const savedCode = getThemeData().code;
+  if (savedCode) document.getElementById('python-code').value = savedCode;
+}
+
+function collectAnswers() {
+  const answers = {};
+  payload.questions.forEach((q) => {
+    const selected = document.querySelector(`input[name="q-${q.id}"]:checked`);
+    if (selected) answers[q.id] = Number(selected.value);
+  });
+  return answers;
+}
+
+function evaluateQcm(answers) {
+  let answered = 0;
+  let correct = 0;
+
+  payload.questions.forEach((q) => {
+    if (!Object.prototype.hasOwnProperty.call(answers, q.id)) return;
+    answered += 1;
+    if (Number(answers[q.id]) === Number(q.answer)) correct += 1;
+  });
+
+  return { answered, correct, total: payload.questions.length };
+}
+
+function evaluateCode(codeRaw) {
+  const code = (codeRaw || '').toLowerCase();
+  const checks = [
+    '@app.post("/users"',
+    'response_model=userout',
+    'status_code=status.http_201_created',
+    'def create_user',
+    'payload: usercreate',
+    'httpexception',
+    'status_code=409',
+    'fake_db.append'
+  ];
+
+  let score = 0;
+  checks.forEach((token) => {
+    if (code.includes(token)) score += 1;
+  });
+  return { score, max: checks.length };
+}
+
+function saveTheme(answers, code) {
+  const qcm = evaluateQcm(answers);
+  const codeEval = evaluateCode(code);
+
+  const qcmScoreScaled = Math.round((qcm.correct / qcm.total) * QCM_POINTS);
+  const totalScore = qcmScoreScaled + codeEval.score;
+  const percent = (totalScore / (QCM_POINTS + CODE_POINTS)) * 100;
+
+  const completed = qcm.answered === qcm.total && code.trim().length > 0;
+  const store = loadStore();
+  store[CONFIG.themeKey] = {
+    answers,
+    code,
+    score: totalScore,
+    max: QCM_POINTS + CODE_POINTS,
+    percent,
+    completed,
+    details: {
+      qcmCorrect: qcm.correct,
+      qcmTotal: qcm.total,
+      qcmPoints: qcmScoreScaled,
+      codePoints: codeEval.score,
+      codeMax: codeEval.max
+    }
+  };
+  saveStore(store);
+  return store[CONFIG.themeKey];
+}
+
+function renderResult(themeData) {
+  const result = document.getElementById('result');
+  if (!themeData.completed) {
+    result.innerHTML = `<span class="pending">Incomplet</span><br><small>Réponds aux 12 QCM et conserve une proposition de code. Score provisoire : ${themeData.score}/${themeData.max} (${themeData.percent.toFixed(1)}%).</small>`;
+    return;
+  }
+
+  const ok = themeData.percent >= thresholds[CONFIG.themeKey];
+  const cls = ok ? 'ok' : 'ko';
+  const label = ok ? 'Seuil atteint' : 'Seuil non atteint';
+  result.innerHTML = `<span class="${cls}">${label}</span><br><small>Score total : ${themeData.score}/${themeData.max} (${themeData.percent.toFixed(1)}%). Détail : QCM ${themeData.details.qcmCorrect}/${themeData.details.qcmTotal} (pondéré ${themeData.details.qcmPoints}/${QCM_POINTS}), code ${themeData.details.codePoints}/${CODE_POINTS}. Seuil requis : ${thresholds[CONFIG.themeKey]}%.</small>`;
+}
+
+document.getElementById('grade-btn').addEventListener('click', () => {
+  const answers = collectAnswers();
+  const code = document.getElementById('python-code').value;
+  const evaluation = saveTheme(answers, code);
+  renderResult(evaluation);
+  renderDecision();
+});
+
+renderQuestions();
+renderDecision();
+</script>
+</body>
+</html>

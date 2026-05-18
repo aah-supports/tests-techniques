@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test B - Conception</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#0b1220;color:#e5edf7;line-height:1.6;margin:0}
+.container{max-width:980px;margin:0 auto;padding:26px 18px 48px}
+.header-bar{background:#0ea5e9;color:#08111f;padding:12px 18px;border-radius:10px;margin-bottom:18px;font-size:.9rem;font-weight:700}
+h1{font-size:1.7rem;margin:0 0 8px 0}
+.subtitle{color:#9db0c8;margin-bottom:18px}
+.panel{background:#111a2b;border:1px solid #243247;border-radius:12px;padding:18px;margin-bottom:16px}
+.q-item{padding:12px;border:1px solid #25334a;border-radius:10px;margin:10px 0;background:#0f1728}
+.q-item p{margin:0 0 8px 0;font-weight:600}
+.options label{display:block;margin:6px 0}
+button{border:none;border-radius:8px;padding:10px 14px;background:#0ea5e9;color:#08111f;font-weight:700;cursor:pointer}
+.result{margin-top:10px;padding:10px 12px;border-radius:8px;background:#0d1728;border:1px solid #1f2d45}
+.ok{color:#34d399;font-weight:700}
+.ko{color:#f87171;font-weight:700}
+.pending{color:#cbd5e1;font-weight:700}
+.back{margin-bottom:10px}
+.back a{text-decoration:none;color:#7dd3fc;font-weight:600}
+small,.note{color:#9db0c8}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-bar"><strong>Test technique</strong></div>
+  <p class="back"><a href="index.html">← Retour aux tests</a></p>
+  <h1>Test B - Conception logicielle</h1>
+  <p class="subtitle">20 questions QCM sur l'architecture, la maintenabilité et la qualité de conception.</p>
+
+  <section class="panel">
+    <h2>Questions</h2>
+    <form id="questions"></form>
+    <button type="button" id="grade-btn">Corriger ce thème</button>
+    <div id="result" class="result" aria-live="polite">Aucune correction lancée.</div>
+    <div id="decision" class="result" aria-live="polite">Décision globale en attente.</div>
+  </section>
+</div>
+
+<script>
+const CONFIG = { themeKey: 'conception' };
+const STORE_KEY = 'testTechScoresDarkV1';
+const requiredForRdv = ['docker', 'conception', 'pythonApi'];
+const thresholds = { docker: 60, conception: 60, pythonApi: 60 };
+
+const payload = {
+  title: 'Conception logicielle',
+  questions: [
+    { id: 1, q: 'Le but principal d\'une architecture en couches est :', options: ['augmenter le nombre de fichiers', 'séparer les responsabilités', 'supprimer les tests', 'éviter les API'], answer: 1 },
+    { id: 2, q: 'Le principe SRP (SOLID) signifie :', options: ['une classe fait une seule chose', 'une classe dépend de tout', 'une classe hérite de plusieurs classes', 'une classe ne contient pas de méthodes'], answer: 0 },
+    { id: 3, q: 'Dans une API REST, une route `GET /users/{id}` doit :', options: ['supprimer un utilisateur', 'créer un utilisateur', 'récupérer un utilisateur', 'mettre à jour en masse'], answer: 2 },
+    { id: 4, q: 'Un couplage fort entre modules rend le projet :', options: ['plus simple à maintenir', 'plus fragile aux changements', 'plus sécurisé automatiquement', 'plus rapide à tester'], answer: 1 },
+    { id: 5, q: 'Pourquoi utiliser des interfaces (ou ports) ?', options: ['pour augmenter la complexité', 'pour découpler contrat et implémentation', 'pour éviter Git', 'pour remplacer les tests'], answer: 1 },
+    { id: 6, q: 'Une bonne API doit renvoyer des codes HTTP :', options: ['toujours 200', 'cohérents avec la situation', 'uniquement 500', 'uniquement 404'], answer: 1 },
+    { id: 7, q: 'Le code métier devrait être :', options: ['directement dans les contrôleurs HTTP', 'isolé de l\'infrastructure', 'dans les fichiers CSS', 'dans les scripts de build seulement'], answer: 1 },
+    { id: 8, q: 'Quand ajouter des tests unitaires ?', options: ['uniquement après mise en prod', 'dès que la logique métier existe', 'jamais', 'seulement sur l\'UI'], answer: 1 },
+    { id: 9, q: 'Le versionnement d\'API (`/v1`, `/v2`) sert à :', options: ['ralentir le backend', 'gérer les évolutions sans casser les clients', 'supprimer la doc', 'éviter les logs'], answer: 1 },
+    { id: 10, q: 'Un DTO est utile pour :', options: ['mélanger les couches', 'structurer les données échangées', 'remplacer les entités métier', 'éviter les validations'], answer: 1 },
+    { id: 11, q: 'La validation d\'entrée côté API doit être :', options: ['absente', 'optionnelle en prod', 'systématique', 'faite uniquement côté front'], answer: 2 },
+    { id: 12, q: 'Un diagramme de séquence sert surtout à :', options: ['décrire les échanges temporels entre composants', 'calculer la charge CPU', 'définir les couleurs UI', 'écrire les migrations SQL'], answer: 0 },
+    { id: 13, q: 'Une exception non gérée en prod doit idéalement :', options: ['crasher sans trace', 'être capturée et journalisée proprement', 'être ignorée', 'être transformée en 200'], answer: 1 },
+    { id: 14, q: 'Pourquoi préférer des fonctions pures pour certains traitements ?', options: ['moins de bord, plus de testabilité', 'plus de dépendances globales', 'plus d\'effets cachés', 'impossible en backend'], answer: 0 },
+    { id: 15, q: 'Un bon nommage de fonction doit être :', options: ['court mais flou', 'explicite sur l\'intention', 'en majuscules uniquement', 'identique partout'], answer: 1 },
+    { id: 16, q: 'Le principe Open/Closed signifie :', options: ['ouvert à extension, fermé à modification directe', 'interdit de changer le code', 'toujours utiliser l\'héritage multiple', 'éviter les interfaces'], answer: 0 },
+    { id: 17, q: 'Une dépendance externe (email, DB) est mieux gérée via :', options: ['appel direct partout', 'injection de dépendance', 'copier-coller de code', 'variables globales'], answer: 1 },
+    { id: 18, q: 'Une revue de code sert principalement à :', options: ['valider la qualité et réduire les risques', 'augmenter les bugs', 'supprimer la documentation', 'désactiver CI'], answer: 0 },
+    { id: 19, q: 'Dans un projet pro, la documentation API type OpenAPI sert à :', options: ['remplacer l\'API', 'décrire précisément les contrats', 'chiffrer la base', 'faire du monitoring'], answer: 1 },
+    { id: 20, q: 'Concevoir pour la maintenabilité implique :', options: ['duplication maximale', 'séparation claire + tests + conventions', 'absence de normes', 'logique métier dispersée'], answer: 1 }
+  ]
+};
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch (err) { return {}; }
+}
+function saveStore(store) { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+
+function globalScoreRdv(store) {
+  const score = requiredForRdv.reduce((acc, k) => acc + Number((store[k] && store[k].score) || 0), 0);
+  const maxTotal = requiredForRdv.reduce((acc, k) => {
+    const max = store[k] && typeof store[k].max === 'number' ? store[k].max : 20;
+    return acc + Number(max || 0);
+  }, 0);
+  const completedThemes = requiredForRdv.filter((k) => store[k] && store[k].completed).length;
+  const percent = maxTotal ? (score / maxTotal) * 100 : 0;
+  return { score, maxTotal, percent, completedThemes, totalThemes: requiredForRdv.length };
+}
+
+function computeDecision(store) {
+  const missing = requiredForRdv.filter((k) => !store[k] || !store[k].completed);
+  if (missing.length) return { status: 'incomplete', missing };
+  const failed = requiredForRdv.filter((k) => (store[k].percent || 0) < thresholds[k]);
+  if (failed.length) return { status: 'no', failed };
+  return { status: 'yes' };
+}
+
+function renderDecision() {
+  const store = loadStore();
+  const d = computeDecision(store);
+  const global = globalScoreRdv(store);
+  const box = document.getElementById('decision');
+
+  if (d.status === 'incomplete') {
+    box.innerHTML = `<span class="pending">Décision : en attente</span><br><small>Tests manquants/incomplets : ${d.missing.join(', ')}. Score global actuel : ${global.score}/${global.maxTotal} (${global.percent.toFixed(1)}%), tests terminés : ${global.completedThemes}/${global.totalThemes}.</small>`;
+    return;
+  }
+  if (d.status === 'no') {
+    box.innerHTML = `<span class="ko">Décision : NON</span><br><small>Thèmes sous le seuil : ${d.failed.join(', ')}. Score global : ${global.score}/${global.maxTotal} (${global.percent.toFixed(1)}%).</small>`;
+    return;
+  }
+  box.innerHTML = `<span class="ok">Décision : OUI</span><br><small>Profil cohérent pour un rendez-vous technique. Score global : ${global.score}/${global.maxTotal} (${global.percent.toFixed(1)}%).</small>`;
+}
+
+function getThemeData() {
+  const store = loadStore();
+  return store[CONFIG.themeKey] || { answers: {}, score: 0, max: 0, percent: 0, completed: false };
+}
+
+function renderQuestions() {
+  const form = document.getElementById('questions');
+  const saved = getThemeData().answers || {};
+  form.innerHTML = payload.questions.map((q, index) => {
+    const options = q.options.map((opt, i) => {
+      const checked = Number(saved[q.id]) === i ? 'checked' : '';
+      return `<label><input type="radio" name="q-${q.id}" value="${i}" ${checked}> ${opt}</label>`;
+    }).join('');
+
+    return `<div class="q-item"><p>${index + 1}. ${q.q}</p><div class="options">${options}</div></div>`;
+  }).join('');
+}
+
+function collectAnswers() {
+  const answers = {};
+  payload.questions.forEach((q) => {
+    const selected = document.querySelector(`input[name="q-${q.id}"]:checked`);
+    if (selected) answers[q.id] = Number(selected.value);
+  });
+  return answers;
+}
+
+function evaluateAnswers(answers) {
+  const total = payload.questions.length;
+  let answered = 0;
+  let correct = 0;
+
+  payload.questions.forEach((q) => {
+    if (!Object.prototype.hasOwnProperty.call(answers, q.id)) return;
+    answered += 1;
+    if (Number(answers[q.id]) === Number(q.answer)) correct += 1;
+  });
+
+  const completed = answered === total;
+  const percent = total ? (correct / total) * 100 : 0;
+  return { total, answered, correct, completed, percent };
+}
+
+function saveThemeFromAnswers(answers) {
+  const evaluation = evaluateAnswers(answers);
+  const store = loadStore();
+  store[CONFIG.themeKey] = {
+    answers,
+    score: evaluation.correct,
+    max: evaluation.total,
+    percent: evaluation.percent,
+    completed: evaluation.completed
+  };
+  saveStore(store);
+  return evaluation;
+}
+
+function renderResult(evaluation) {
+  const result = document.getElementById('result');
+  if (!evaluation.completed) {
+    result.innerHTML = `<span class="pending">Incomplet</span><br><small>Répondu : ${evaluation.answered}/${evaluation.total}. Score provisoire : ${evaluation.correct}/${evaluation.total} (${evaluation.percent.toFixed(1)}%).</small>`;
+    return;
+  }
+
+  const ok = evaluation.percent >= thresholds[CONFIG.themeKey];
+  const cls = ok ? 'ok' : 'ko';
+  const label = ok ? 'Seuil atteint' : 'Seuil non atteint';
+  result.innerHTML = `<span class="${cls}">${label}</span><br><small>Score : ${evaluation.correct}/${evaluation.total} (${evaluation.percent.toFixed(1)}%). Seuil requis : ${thresholds[CONFIG.themeKey]}%.</small>`;
+}
+
+document.getElementById('grade-btn').addEventListener('click', () => {
+  const answers = collectAnswers();
+  const evaluation = saveThemeFromAnswers(answers);
+  renderResult(evaluation);
+  renderDecision();
+});
+
+renderQuestions();
+renderDecision();
+</script>
+</body>
+</html>
